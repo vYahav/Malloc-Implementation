@@ -1,3 +1,10 @@
-#include <iostream>
+#include <math.h>
 #include <unistd.h>
-//TODO: implement Part1 Naive malloc!
+
+void* smalloc(size_t size){
+    if(size <= 0 || size > pow(10,8)){
+        return nullptr;
+    }
+    void* ptr = sbrk(size);
+    return ptr == (void*)(-1) ? nullptr : ptr;
+}
