@@ -89,7 +89,7 @@ void* srealloc(void* oldp, size_t size){
     }
     metadata old_ptr = (metadata)oldp - sizeof(struct metadata_t);
     if(old_ptr->size >= size){
-        old_ptr->size = size;
+        //old_ptr->size = size;
         return oldp;
     }
     void* new_ptr = smalloc(size);
