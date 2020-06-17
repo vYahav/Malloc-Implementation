@@ -30,11 +30,11 @@ void* smalloc(size_t size){
             last = alloc_ptr; //the program break after sbrk
         }
         if(first == nullptr){
+            alloc_ptr->next = nullptr;
             first = alloc_ptr; //the program break before sbrk
         }
         alloc_ptr->size = size;
         alloc_ptr->is_free = false;
-        alloc_ptr->next = nullptr;
         return (void*)(alloc_ptr + sizeof(struct metadata_t));
     }
     metadata it = first;
