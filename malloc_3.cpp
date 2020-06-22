@@ -13,6 +13,9 @@ typedef struct metadata_t {
     metadata_t* prev;
 } *metadata;
 
+typedef struct metadata_t MallocMetadata;
+//#define META_SIZE (sizeof(struct metadata_t))
+
 //sbrk list
 metadata first = nullptr;
 metadata last = nullptr;
@@ -23,6 +26,7 @@ metadata last_mmap = nullptr;
 
 const int large_enough_size = 128;
 const int size_to_mmap = 128000; //128KB
+
 void challenge1_block_cutter(metadata block_to_split, size_t size);
 void merge_with_prev(metadata p);
 void merge_with_next(metadata p);
@@ -33,7 +37,7 @@ void* challenge4_mmap_block(size_t size);
 
 void* smalloc(size_t size){
     if(size <= 0 || size > (size_t)(pow(10.0,8.0))){
-        return nullptr;
+       return nullptr;
     }
     if(size >= size_to_mmap){
         return challenge4_mmap_block(size);
@@ -43,6 +47,11 @@ void* smalloc(size_t size){
         if(nullptr != first && (first->size >= size + sizeof(struct metadata_t) + large_enough_size)){
             //TODO: call challenge1 funnction
             challenge1_block_cutter(first, size);
+            return (void*)(first + sizeof(struct metadata_t));
+        }
+        if(nullptr != first && first->size >= size && first->is_free){
+            first->is_free = false;
+            first->size = size;
             return (void*)(first + sizeof(struct metadata_t));
         }
         metadata alloc_ptr = (metadata)sbrk(0);
@@ -119,7 +128,7 @@ void sfree(void* p){
     if(nullptr == p){
         return;
     }
-    metadata met = (metadata)p - sizeof(struct metadata_t);
+    metadata met = (metadata)p - 1;
     if(!met->is_sbrk){
         if(first_mmap == met){
             if(first_mmap == last_mmap){
@@ -154,7 +163,7 @@ void* srealloc(void* oldp, size_t size){
     if(nullptr == oldp){
         return smalloc(size);
     }
-    metadata old_ptr = (metadata)oldp - sizeof(struct metadata_t);
+    metadata old_ptr = (metadata)oldp - 1;
     //if(old_ptr->is_free){ TODO: check if we need to realloc an unallocated pointer!
     //  return nullptr;
     //}
@@ -165,7 +174,7 @@ void* srealloc(void* oldp, size_t size){
         }
         //TODO: chech how many bytes to copy
         size_t minimum = old_ptr->size < size ? old_ptr->size : size;
-        memcpy(new_block, oldp, minimum);
+        memcpy(new_block, oldp, minimum); //TODO: check memove ?
         sfree(oldp);
         return new_block;
     }
@@ -204,6 +213,7 @@ void* srealloc(void* oldp, size_t size){
         return nullptr;
     }
     size_t minimum = old_ptr->size < size ? old_ptr->size : size;
+    //TODO: check memove ?
     memcpy(new_ptr, oldp, minimum); //TODO: check how many bytes to copy
     sfree(oldp);
     return new_ptr;
@@ -318,7 +328,7 @@ void merge_with_prev(metadata p){
     }
     p->prev->size += p->size + sizeof(struct metadata_t);
     p->prev->next = p->next;
-    if(nullptr != p->next->prev){
+    if(nullptr != p->next){
         p->next->prev = p->prev;
     }
 }
@@ -338,8 +348,8 @@ void merge_with_next(metadata p){
 }
 
 void challenge2_block_combine(metadata p){
-    merge_with_prev(p);
     merge_with_next(p);
+    merge_with_prev(p);
 }
   //Challenge 4
   
@@ -349,8 +359,9 @@ void* challenge4_mmap_block(size_t size){
         return nullptr;
     }
     metadata m = (metadata)map;
-    if(nullptr == first){
+    if(nullptr == first_mmap){
         first_mmap = m;
+        m->prev = nullptr;
     }
     m->is_free = false;
     m->is_sbrk = false;

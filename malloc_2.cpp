@@ -65,7 +65,7 @@ void* smalloc(size_t size){
     }
     it->next->is_free = false;
     it->next->size = size;
-    return(it->next + sizeof(struct metadata_t));
+    return(void*)(it->next + sizeof(struct metadata_t));
 }
 
 void* scalloc (size_t num, size_t size){
@@ -81,7 +81,7 @@ void sfree(void* p){
     if(nullptr == p){
         return;
     }
-    metadata met = (metadata)p - sizeof(struct metadata_t);
+    metadata met = (metadata)p - 1;
     met->is_free = true;
 }
 
@@ -168,11 +168,13 @@ size_t _size_meta_data(){
 
 //#endif //_malloc_2
 //TEST: TODO remove before submission!
-/*typedef struct metadata_t MallocMetadata;
+typedef struct metadata_t MallocMetadata;
 
 int main() {
     std::cout <<sizeof(MallocMetadata)<<std::endl;
+    cout << "1" << endl;
     std::cout <<smalloc(10)<<std::endl;
+cout << "2" << endl;
     int* ptr = (int*)smalloc(32);
     for (int i = 0; i < (32 / sizeof(int)); i++) {
         ptr[i] = i;
@@ -200,14 +202,20 @@ int main() {
     std::cout <<ptr<<std::endl;
     sfree (ptr);
     ptr = (int*)smalloc(15);
+cout << "3" << endl;
     std::cout <<ptr<<std::endl;
     memset(ptr, 5 ,15);
     //std::cout <<"nside ptr  :"<<((int)ptr)<<std::endl;
     //std::cout <<"size ptr"<<alocationList->getSize(ptr)<<std::endl;
+    cout << "4" << endl;
     std::cout << srealloc(ptr,7) << std::endl;
+cout << "5" << endl;
     std::cout << srealloc(ptr,25) << std::endl;
+cout << "6" << endl;
     std::cout <<smalloc(18)<<std::endl;
+cout << "7" << endl;
     ptr = (int*) scalloc(4,6);
+
     std::cout <<ptr<<std::endl;
 
     char* ptr3 = (char*)scalloc(1, 10);
@@ -216,4 +224,4 @@ int main() {
     }
 //    std::cout <<"size ptr"<<alocationList->getSize(ptr)<<std::endl;
     return 0;
-}*/
+}
