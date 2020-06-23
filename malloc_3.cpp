@@ -33,8 +33,9 @@ metadata merge_with_prev(metadata p);
 metadata merge_with_next(metadata p);
 metadata challenge2_block_combine(metadata p);
 void* challenge4_mmap_block(size_t size);
-
-//TODO: check if sizeof(ptr + struct metadata_t) OR sizeof(ptr + 1)
+static inline bool size_check(metadata t, size_t size){
+    return t->size + t->prev->size + t->next->size >= size;
+}
 
 void* smalloc(size_t size){
     if(size <= 0 || size > (size_t)(pow(10.0,8.0))){
@@ -189,6 +190,14 @@ void* srealloc(void* oldp, size_t size){
         sfree(oldp);
         return new_block;
     }
+    if((old_ptr == last || nullptr == old_ptr->next) && old_ptr->size < size){
+        size_t delta = size - old_ptr->size;
+        if(sbrk(delta) == (void*)(-1)){
+            return nullptr;
+        }
+        old_ptr->size = size;
+        return oldp;
+    }
     if(old_ptr->size >= size){
         //old_ptr->size = size; TODO: check this!!
         if(old_ptr->size >= size + sizeof(struct metadata_t) + large_enough_size){
@@ -197,6 +206,7 @@ void* srealloc(void* oldp, size_t size){
         return oldp;
     }
     if(nullptr != old_ptr->prev && old_ptr->prev->is_free && old_ptr->size + old_ptr->prev->size >= size){
+        cout << "combine prev"<<endl;
         old_ptr->is_free = true;
         old_ptr = merge_with_prev(old_ptr);
         old_ptr->is_free = false;
@@ -209,6 +219,7 @@ void* srealloc(void* oldp, size_t size){
         return (old_ptr + 1);
     }
     if(nullptr != old_ptr->next && old_ptr->next->is_free && old_ptr->size + old_ptr->next->size >= size){
+        cout << "combine next" << endl;
         old_ptr->is_free = true;
         old_ptr = merge_with_next(old_ptr);
         old_ptr->is_free = false;
@@ -221,18 +232,20 @@ void* srealloc(void* oldp, size_t size){
         return (old_ptr + 1);
     }
     if(nullptr != old_ptr->prev && nullptr != old_ptr->next && old_ptr->prev->is_free && old_ptr->next->is_free){
-        if(old_ptr->size + old_ptr->prev->size + old_ptr->next->size >= size){
+        if(size_check(old_ptr, size)){
+            cout << "combine both" << endl;
             old_ptr->is_free = true;
             old_ptr = challenge2_block_combine(old_ptr);
             old_ptr->is_free = false;
             old_ptr->is_sbrk = true;
-            old_ptr->size -= 2*sizeof(struct metadata_t);
+            if(old_ptr->size >= size + sizeof(struct metadata_t) + large_enough_size){
+                challenge1_block_cutter(old_ptr, size);
+            }
+            old_ptr->size = size;
+            memcpy(old_ptr + 1, oldp, old_ptr->size < size ? old_ptr->size : size);
+            old_ptr->is_free = false;
+            return (old_ptr + 1);
         }
-        if(old_ptr->size >= size + sizeof(struct metadata_t) + large_enough_size){
-            challenge1_block_cutter(old_ptr, size);
-        }
-        memcpy(old_ptr + 1, oldp, old_ptr->size < size ? old_ptr->size : size);
-        return (old_ptr + 1);
     }
     old_ptr->is_free = true;
     void* new_ptr = smalloc(size);
@@ -241,7 +254,7 @@ void* srealloc(void* oldp, size_t size){
         return nullptr;
     }
     if(new_ptr == oldp){
-        //cout << "meow" << endl;
+        cout << "meow" << endl;
         return new_ptr;
     }
     size_t minimum = old_ptr->size < size ? old_ptr->size : size;
@@ -389,7 +402,7 @@ metadata merge_with_next(metadata p){
 metadata challenge2_block_combine(metadata p){
     //cout << "challenge2 in" << endl;
     merge_with_next(p);
-    return merge_with_prev(p) ? p : p->prev;
+    return merge_with_prev(p) ? p->prev : p;
     //cout << "challenge2 out" << endl;
 }
   //Challenge 4
