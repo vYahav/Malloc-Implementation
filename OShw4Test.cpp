@@ -17,6 +17,7 @@ static void print(){
 }
 
 int main() {
+    cout << sizeof(struct metadata_t) << endl;
     void *p1, *p2, *p3, *p4, *p5, *p6, *p7, *p8, *p9, *p10, *p11, *p12, *p13, *p14 ,*p15;
     //check mmap allocation and malloc/calloc fails
     smalloc(0);

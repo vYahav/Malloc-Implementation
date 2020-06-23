@@ -6,6 +6,7 @@
 
 using namespace std;
 
+//size of this struct is 32
 typedef struct metadata_t {
     size_t size;
     bool is_free;
@@ -37,10 +38,15 @@ static inline bool size_check(metadata t, size_t size){
     return t->size + t->prev->size + t->next->size + 2*sizeof(struct metadata_t) >= size;
 }
 
-void* smalloc(size_t size){
-    if(size <= 0 || size > (size_t)(pow(10.0,8.0))){
+static inline size_t align_size(size_t size){
+    return size % 8 == 0 ? size : size + 8 - size % 8;
+}
+
+void* smalloc(size_t size1){
+    if(size1 <= 0 || size1 > (size_t)(pow(10.0,8.0))){
        return nullptr;
     }
+    size_t size = align_size(size1);
     if(size >= size_to_mmap){
         return challenge4_mmap_block(size);
     }
@@ -162,13 +168,14 @@ void sfree(void* p){
     challenge2_block_combine(met);
 }
 
-void* srealloc(void* oldp, size_t size){
-    if(size <= 0 || size > (size_t)(pow(10.0, 8.0))){
+void* srealloc(void* oldp, size_t size1){
+    if(size1 <= 0 || size1 > (size_t)(pow(10.0, 8.0))){
         return nullptr;
     }
     if(nullptr == oldp){
-        return smalloc(size);
+        return smalloc(size1);
     }
+    size_t size = align_size(size1);
     metadata old_ptr = (metadata)oldp - 1;
     if(!old_ptr->is_sbrk){
         void* new_block = challenge4_mmap_block(size);
@@ -335,12 +342,12 @@ static void challenge1_block_cutter(metadata block_to_split, size_t size){
     
     second_half->is_free = true;
     second_half->is_sbrk = true;
-    second_half->size = block_to_split->size - size - sizeof(struct metadata_t);
+    second_half->size = align_size(block_to_split->size - size - sizeof(struct metadata_t));
     second_half->next = block_to_split->next;
     second_half->prev = block_to_split;
     
     block_to_split->is_sbrk = true;
-    block_to_split->size = size;
+    block_to_split->size = align_size(size);
     block_to_split->next = second_half;
     block_to_split->is_free = false;
 
@@ -392,7 +399,8 @@ static metadata challenge2_block_combine(metadata p){
 }
   //Challenge 4
   
-static void* challenge4_mmap_block(size_t size){
+static void* challenge4_mmap_block(size_t size1){
+    size_t size = align_size(size1);
     char* map = (char*)mmap(nullptr, size + sizeof(struct metadata_t), PROT_READ | PROT_WRITE, MAP_ANONYMOUS | MAP_PRIVATE, -1, 0);
     if(map == MAP_FAILED){
         return nullptr;
