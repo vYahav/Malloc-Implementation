@@ -130,25 +130,25 @@ int main() {
     sfree(p5); sfree(p3);
     //check case b
     p3 = srealloc(p4,2000);
-    cout << "p3 = srealloc(p4, 2000)" << endl;
-    print();
+   // cout << "p3 = srealloc(p4, 2000)" << endl;
+    //print();
     //LIST CONDITION: 1-> 1000 FREE, 2->1000, 3->2000,
     // 5-> 1000 FREE, 6->2000
     //now i return the list to its state before tha last realloc
     p3 = srealloc(p3,1000);
-    cout << "p3 = srealloc(p3,1000)" << endl;
-    print();
+    //cout << "p3 = srealloc(p3,1000)" << endl;
+    //print();
     p4 = ((char*)p3 + 1000 + META_SIZE);
     p1 = smalloc(1000); p4=smalloc(1000); sfree(p1);
     sfree(p3);
-    cout << "p1 = smalloc(1000); p4=smalloc(1000); sfree(p1)" << endl;
-    print();
+    //cout << "p1 = smalloc(1000); p4=smalloc(1000); sfree(p1)" << endl;
+    //print();
     //check case d
     p3 = srealloc(p4,3000);
-    cout << "p3 = srealloc(p4,3000); " << endl;
-    print();
-    cout << _num_free_blocks() << endl;
-    print();
+    //cout << "p3 = srealloc(p4,3000); " << endl;
+    //print();
+    //cout << _num_free_blocks() << endl;
+    //print();
     assert(_num_free_blocks() == 1);
     assert(_num_free_bytes() == 1000);
     assert(_num_allocated_blocks() == 4);
