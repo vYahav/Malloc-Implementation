@@ -1,4 +1,4 @@
-#include <iostream>
+//#include <iostream>
 #include <math.h>
 #include <cstring>
 #include <unistd.h>
@@ -14,7 +14,6 @@ typedef struct metadata_t {
     metadata_t* prev;
 } *metadata;
 
-typedef struct metadata_t MallocMetadata;
 //#define META_SIZE (sizeof(struct metadata_t))
 
 //sbrk list
@@ -305,7 +304,7 @@ size_t _num_allocated_bytes(){
 }
 
 size_t _num_meta_data_bytes(){
-    size_t count = 0;
+    /*size_t count = 0;
     metadata it = first;
     while(nullptr != it){
         count += sizeof(struct metadata_t);
@@ -316,8 +315,8 @@ size_t _num_meta_data_bytes(){
         count += sizeof(struct metadata_t);
         it2 = it2->next;
     }
-    return count;
-   // return _num_free_blocks() * sizeof(struct metadata_t);
+    return count;*/
+    return _num_allocated_blocks() * sizeof(struct metadata_t);
 }
 
 size_t _size_meta_data(){
@@ -328,7 +327,7 @@ size_t _size_meta_data(){
 
 static void challenge1_block_cutter(metadata block_to_split, size_t size){
     //2nd half should be 'sizeof(metadata) + size' space after the 1st half 
-    //why char* ? because sizeof(char) is 1 and we want to advance in size bytes
+    //why char* ? because sizeof(char) is 1 and we want to advance 'size' bytes
     
     char* temp = (char*)(block_to_split);
     metadata second_half = (metadata)(temp + sizeof(struct metadata_t) + size);
@@ -343,13 +342,13 @@ static void challenge1_block_cutter(metadata block_to_split, size_t size){
     block_to_split->size = size;
     block_to_split->next = second_half;
     block_to_split->is_free = false;
-
-    //TODO: if splitted->next is free than we should connect them together to 1 block
-    //so we need to call chllenge 2 function
-    if(second_half->is_free && nullptr != second_half->next && second_half->next->is_free){
+    
+    //according to the PDF, if both second_half and second_half->next are free
+    //we should NOT merge them (weird af I know... we don't make the rules, we just follow them)
+    /*if(nullptr != second_half->next && second_half->next->is_free){
         //TODO: merge blocks. call challenge 2 function
         merge_with_next(second_half);
-    }
+    }*/
 }
 
 //Challenge 2
@@ -413,33 +412,4 @@ static void* challenge4_mmap_block(size_t size){
     last_mmap = m;
     return (void*)(map + sizeof(struct metadata_t));
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 

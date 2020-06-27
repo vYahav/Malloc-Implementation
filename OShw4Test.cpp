@@ -2,6 +2,7 @@
 #include<cassert>
 #include "malloc_3.cpp"
 
+typedef struct metadata_t MallocMetadata;
 
 #define META_SIZE         sizeof(MallocMetadata) // put your meta data name here
 

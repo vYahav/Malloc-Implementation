@@ -1,8 +1,10 @@
 #include <math.h>
 #include <cstring>
 #include <unistd.h>
-#include <cassert>
-#include <iostream>
+
+//TODO: remove before submission!
+//#include <cassert>
+//#include <iostream>
 
 using namespace std;
 
@@ -15,14 +17,12 @@ typedef struct metadata_t {
 metadata first = nullptr;
 metadata last = nullptr;
 
-//TODO: check if sizeof(ptr + struct metadata_t) OR sizeof(ptr + 1)
-
 void* smalloc(size_t size){
     if(size <= 0 || size > (size_t)(pow(10.0,8.0))){
         return nullptr;
     }
-    if (first == nullptr || (first->size >= size && first->is_free)){
-        //TODO: check if allocation really puts metadata first!!
+    //if the list is empty:
+    if (first == nullptr /*|| (first->size >= size && first->is_free)*/){
         metadata alloc_ptr = (metadata)sbrk(0);
         void* new_block = sbrk(size + sizeof(struct metadata_t));
         if(new_block == (void*)(-1)){
@@ -31,13 +31,18 @@ void* smalloc(size_t size){
         if(last == nullptr){
             last = alloc_ptr;
         }
-        if(first == nullptr){
+        /*if(first == nullptr){*/
             alloc_ptr->next = nullptr;
             first = alloc_ptr;
-        }
+        //}
         alloc_ptr->size = size;
         alloc_ptr->is_free = false;
         return (alloc_ptr + 1);
+    }
+    //check if first element on the list is free and fits by size
+    if(nullptr != first && first->size >= size && first->is_free){
+        first->is_free = false;
+        return (first + 1);
     }
     metadata it = first;
     while(it->next != nullptr){
@@ -61,7 +66,7 @@ void* smalloc(size_t size){
         return (alloc_ptr + 1);
     }
     it->next->is_free = false;
-    it->next->size = size;
+    //it->next->size = size;
     return (it->next + 1);
 }
 
@@ -219,5 +224,13 @@ int main() {
         if (ptr3[i] != 0) cout << "WTF you have a problem. A sheep programming for ISIS does a better job than you";
     }
 //    std::cout <<"size ptr"<<alocationList->getSize(ptr)<<std::endl;
+    cout << " _ " << endl;
+    metadata i = first;
+    int j = 1;
+    while (i != nullptr){
+        cout << j++ << " - " << i << " - " << i->size << " - " << i->is_free << endl;
+        i = i->next;
+    }
     return 0;
 }*/
+
