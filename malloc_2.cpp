@@ -3,8 +3,8 @@
 #include <unistd.h>
 
 //TODO: remove before submission!
-#include <cassert>
-#include <iostream>
+//#include <cassert>
+//#include <iostream>
 
 using namespace std;
 
@@ -169,7 +169,7 @@ size_t _size_meta_data(){
 }
 
 //TEST: TODO remove before submission!
-typedef struct metadata_t MallocMetadata;
+/*typedef struct metadata_t MallocMetadata;
 
 int main() {
     std::cout <<sizeof(MallocMetadata)<<std::endl;
@@ -232,5 +232,5 @@ int main() {
         i = i->next;
     }
     return 0;
-}
+}*/
 
