@@ -1,4 +1,3 @@
-//#include <iostream>
 #include <math.h>
 #include <cstring>
 #include <unistd.h>
@@ -13,8 +12,6 @@ typedef struct metadata_t {
     metadata_t* next;
     metadata_t* prev;
 } *metadata;
-
-//#define META_SIZE (sizeof(struct metadata_t))
 
 //sbrk list
 metadata first = nullptr;
