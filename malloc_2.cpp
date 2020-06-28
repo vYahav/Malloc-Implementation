@@ -103,7 +103,7 @@ void* srealloc(void* oldp, size_t size){
     if(nullptr == new_ptr){
         return nullptr;
     }
-    memcpy(new_ptr, oldp, old_ptr->size < size ? old_ptr->size : size);
+    memmove(new_ptr, oldp, old_ptr->size < size ? old_ptr->size : size);
     sfree(oldp);
     return new_ptr;
 }
@@ -233,4 +233,5 @@ int main() {
     }
     return 0;
 }*/
+
 

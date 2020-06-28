@@ -171,9 +171,8 @@ void* srealloc(void* oldp, size_t size){
         if(nullptr == new_block){
             return nullptr;
         }
-        //TODO: check how many bytes to copy
         size_t minimum = old_ptr->size < size ? old_ptr->size : size;
-        memcpy(new_block, oldp, minimum); //TODO: check memove ?
+        memmove(new_block, oldp, minimum); 
         sfree(oldp);
         return new_block;
     }
@@ -200,7 +199,7 @@ void* srealloc(void* oldp, size_t size){
         if(old_ptr->size >= size + sizeof(struct metadata_t) + large_enough_size){
             challenge1_block_cutter(old_ptr, size);
         }
-        memcpy(old_ptr + 1, oldp, old_ptr->size < size ? old_ptr->size : size);
+        memmove(old_ptr + 1, oldp, old_ptr->size < size ? old_ptr->size : size);
         return (old_ptr + 1);
     }
     if(nullptr != old_ptr->next && old_ptr->next->is_free && old_ptr->size + old_ptr->next->size >= size){
@@ -212,7 +211,7 @@ void* srealloc(void* oldp, size_t size){
         if(old_ptr->size >= size + sizeof(struct metadata_t) + large_enough_size){
             challenge1_block_cutter(old_ptr, size);
         }
-        memcpy(old_ptr + 1, oldp, old_ptr->size < size ? old_ptr->size : size);
+        memmove(old_ptr + 1, oldp, old_ptr->size < size ? old_ptr->size : size);
         return (old_ptr + 1);
     }
     if(nullptr != old_ptr->prev && nullptr != old_ptr->next && old_ptr->prev->is_free && old_ptr->next->is_free){
@@ -225,7 +224,7 @@ void* srealloc(void* oldp, size_t size){
                 challenge1_block_cutter(old_ptr, size);
             }
             //old_ptr->size -= sizeof(struct metadata_t);
-            memcpy(old_ptr + 1, oldp, old_ptr->size < size ? old_ptr->size : size);
+            memmove(old_ptr + 1, oldp, old_ptr->size < size ? old_ptr->size : size);
             old_ptr->is_free = false;
             return (old_ptr + 1);
         }
@@ -240,8 +239,7 @@ void* srealloc(void* oldp, size_t size){
         return new_ptr;
     }
     size_t minimum = old_ptr->size < size ? old_ptr->size : size;
-    //TODO: check memove ?
-    memcpy(new_ptr, oldp, minimum); //TODO: check how many bytes to copy
+    memmove(new_ptr, oldp, minimum);
     sfree(oldp);
     return new_ptr;
 }
